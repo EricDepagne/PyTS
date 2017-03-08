@@ -8,7 +8,7 @@ import numpy as np
 
 # python imports
 from string import Template
-import configparser 
+import configparser
 
 # Parameters
 tbversion = '15.1'
@@ -17,10 +17,9 @@ tbversion = '15.1'
 def main():
     print('Starting Turbospectrum version {version}\n'.format(version=tbversion))
 # Loading configuration
-    with open('pyts.ini') as cf:
-        config = configparser.ConfigParser()
-        config.read(cf)
-    print('Configuration : {config}'.format(config=config))
+    c = configparser.ConfigParser()
+    c.read('pyts.ini')
+    print('Configuration : {config}'.format(config=c.sections()))
 
 if __name__ == "__main__":
     main()
