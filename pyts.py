@@ -45,8 +45,8 @@ def configuration():
 def main():
     print('Starting Turbospectrum version {version}\n'.format(version=tbversion))
     (config, r) = configuration()
-    p = subprocess.Popen([config['Program']['babsma_exec']], stdin=subprocess.PIPE, stdout=subprocess.PIPE, cwd=config['Path']['base_dir'])
-    outs, errs = p.communicate(input=r.encode())
+    p = subprocess.Popen([config['Program']['babsma_exec']], stdin=subprocess.PIPE, stdout=subprocess.PIPE, cwd=config['Path']['base_dir'], universal_newlines=True)
+    outs, errs = p.communicate(input=r)
     print(outs)
 
 
