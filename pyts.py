@@ -16,35 +16,38 @@ tbversion = '15.1'
 
 
 def configuration():
-# Loading configuration
-    c = configparser.ConfigParser()
-    c.read('pyts.cfg')
-    print('Configuration : {config}'.format(config=c.sections()))
-    return c
-
-
-def parameters(config):
-    # input_model = config['Path']['turbospectrum_dir'] + config['Path']['models_path'] + config['Global']['model_file']
+    # Loading configuration
+    config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+    config.read('pyts.cfg')
+    print('Configuration : {config}'.format(config=config.sections()))
     tpl = open('Babsma.tpl')
     src = Template(tpl.read())
     d = {
+            'delta_lambda': 0.001,
+            'turbulence_velocity': 0,
             'lambda_min': config['Global']['lambda_min'],
             'lambda_max': config['Global']['lambda_max'],
-            'delta_lambda': 0.001,
-            'input_model': config['Path']['turbospectrum_dir'] + config['Path']['models_path'] + config['Global']['model_file'],
-            'turbulence_velocity': 0
+            'metallicity': config['Global']['metallicity'],
+            'xifix': config['Global']['xifix'],
+            'marcsfile': config['Global']['marcsfile'],
+            'input_model': config['Path']['model_dir'] + config['Global']['model_file'],
+            'opacity_file': config['Models']['opacity_file'],
+            'alpha_over_iron': config['Models']['alpha_over_iron'],
+            'helium_fraction': config['Models']['helium_fraction'],
+            'r_process_fraction': config['Models']['r_process_fraction'],
+            's_process_fraction': config['Models']['s_process_fraction']
         }
     r = src.substitute(d)
     print(r)
-    babslu = config['Path']['turbospectrum_dir'] + config['Path']['exec_dir'] + config['Program']['babsma_exec']
-    p = subprocess.Popen([babslu], stdin=subprocess.PIPE, stdout=subprocess.PIPE, cwd=config['Path']['turbospectrum_dir'])
-    p.communicate(input=r.encode())[0]
+    return config, r
 
 
 def main():
     print('Starting Turbospectrum version {version}\n'.format(version=tbversion))
-    config = configuration()
-    parameters(config)
+    (config, r) = configuration()
+    p = subprocess.Popen([config['Program']['babsma_exec']], stdin=subprocess.PIPE, stdout=subprocess.PIPE, cwd=config['Path']['base_dir'])
+    outs, errs = p.communicate(input=r.encode())
+    print(outs)
 
 
 if __name__ == "__main__":
