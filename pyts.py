@@ -20,6 +20,8 @@ def main():
     c = configparser.ConfigParser()
     c.read('pyts.ini')
     print('Configuration : {config}'.format(config=c.sections()))
+# p = subprocess.Popen(["/home/eric/Science/Projets/TurboSpectrum/V15.1/exec-gf-v15.1/babsma_lu"], stdin=PIPE, stdout=PIPE)
+# p.communicate(input=b"'LAMBDA_MIN:'  '6500'\n'LAMBDA_MAX:'  '6600'\n'LAMBDA_STEP:' '0.01'")[0]
 
 if __name__ == "__main__":
     main()
