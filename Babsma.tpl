@@ -1,7 +1,7 @@
 'LAMBDA_MIN:'  '$lambda_min'
 'LAMBDA_MAX:'  '$lambda_max'
 'LAMBDA_STEP:' '$delta_lambda'
-'MODELINPUT:'
+'MODELINPUT:'   '$input_model'
 'MARCS-FILE:'
 'MODELOPAC:'
 'METALLICITY:'
