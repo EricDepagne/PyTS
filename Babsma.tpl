@@ -10,5 +10,5 @@
 'R-PROCESS:' '$r_process_fraction'
 'S-PROCESS:' '$s_process_fraction'
 'INDIVIDUAL ABUNDANCES:' '0'
-'XIFIX:' '$xifix'
+'XIFIX:' '$chifix'
 $turbulence_velocity
