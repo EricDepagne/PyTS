@@ -5,7 +5,7 @@
 'COS(THETA)    :' '1.00'
 'ABFIND        :' '$abfind'
 'MODELOPAC:' '$opacity_file'
-'RESULTFILE :' '$synthetic_spectrum'
+'RESULTFILE :' '$out_file'
 'METALLICITY:'    '$metallicity'
 'ALPHA/Fe   :'    '$alpha_over_iron'
 'HELIUM     :'    '$helium_fraction'
@@ -17,7 +17,7 @@ $list_of_elements
 3.006  0.075
 3.007  0.925
 'NFILES   :' '$number_of_files'
-$list_of_line_files
+$list_of_lines_files
 'SPHERICAL:'  '$spherical'
   30
   300.00
