@@ -43,8 +43,8 @@ def configuration():
             'spherical': config['Global']['spherical'],
             'number_of_elements': len(config['Models']['individual_abundances'].split(",")),
             'list_of_elements': '\n'.join(config['Models']['individual_abundances'].split(",")),
-            'number_of_files': len(config['Files']['data_files'].split(",")),
-            'list_of_files': '\n'.join(config['Files']['data_files'].split(","))
+            'number_of_files': len(config['Files']['linedata_files'].split(",")),
+            'list_of_lines_files': '\n'.join(config['Files']['linedata_files'].split(","))
 
         }
     babsma = babsma_src.substitute(d)

@@ -17,7 +17,7 @@ $list_of_elements
 3.006  0.075
 3.007  0.925
 'NFILES   :' '$number_of_files'
-$list_of_files
+$list_of_line_files
 'SPHERICAL:'  '$spherical'
   30
   300.00
