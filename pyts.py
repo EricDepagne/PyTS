@@ -41,6 +41,8 @@ def configuration():
             'r_process_fraction': config['Models']['r_process_fraction'],
             's_process_fraction': config['Models']['s_process_fraction'],
             'spherical': config['Global']['spherical'],
+            'number_of_elements': len(config['Models']['individual_abundances'].split(",")),
+            'list_of_elements': '\n'.join(config['Models']['individual_abundances'].split(",")),
             'number_of_files': len(config['Files']['data_files'].split(",")),
             'list_of_files': '\n'.join(config['Files']['data_files'].split(","))
 

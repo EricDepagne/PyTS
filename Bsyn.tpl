@@ -11,8 +11,8 @@
 'HELIUM     :'    '$helium_fraction'
 'R-PROCESS  :'    '$r_process_fraction'
 'S-PROCESS  :'    '$s_process_fraction'
-'INDIVIDUAL ABUNDANCES:'   '1'
-3  1.05
+'INDIVIDUAL ABUNDANCES:'   '$number_of_elements'
+$list_of_elements
 'ISOTOPES : ' '2'
 3.006  0.075
 3.007  0.925
