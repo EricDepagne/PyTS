@@ -10,18 +10,18 @@ import numpy as np
 from string import Template
 import configparser
 import subprocess
+from itertools import product
 
 # Parameters
 config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
 config.read('pyts.cfg')
 turbospectrum = {
         'version':  config['Global']['version'],
-
                 }
 
 
 def configuration(prg, abu=None):
-    print(prg)
+    print('Executing program {prg}'.format(prg=prg))
     # Loading configuration
     if 'babsma' in prg:
         tpl_file = 'Babsma.tpl'
@@ -39,7 +39,6 @@ def configuration(prg, abu=None):
             section = 'Eqwidth'
         else:
             section = 'SyntheticSpectrum'
-        print('Section : {section}'.format(section=section))
 
         extended_parameters = {
             'intensity_or_flux': config['Global']['intensity_or_flux'],
@@ -55,48 +54,53 @@ def configuration(prg, abu=None):
             'lambda_min': config['Global']['lambda_min'],
             'lambda_max': config['Global']['lambda_max'],
             'delta_lambda': config['Global']['delta_lambda'],
-            'opacity_file': config['Results']['opacity_file'],
             'metallicity': config['Global']['metallicity'],
             'alpha_over_iron': config['Models']['alpha_over_iron'],
             'helium_fraction': config['Models']['helium_fraction'],
             'r_process_fraction': config['Models']['r_process_fraction'],
             's_process_fraction': config['Models']['s_process_fraction'],
+            'opacity_file': config['Results']['opacity_file'],
         }
     template = open(tpl_file)
     source = Template(template.read())
-    # bsyn_tpl = open('TurboSpectrum.tpl')
-    # bsyn_src = Template(bsyn_tpl.read())
     d = {**common_parameters, **extended_parameters}
-    print(list(d))
 
     stdin = source.substitute(d)
-    # bsyn = bsyn_src.substitute(d)
-    print(stdin)
 
-    return config, stdin
+    return stdin
 
 
 def main():
     print('Starting Turbospectrum version {version}\n'.format(version=turbospectrum['version']))
-    (config, prg_input) = configuration('babsma')
-    (a, b) = configuration('bsyn', abu=True)
-    prg = ['babsma', 'eqwidth', 'bsyn']
+    # Babsma is run everytime.
+    babsma_input = configuration('babsma')
     p = subprocess.Popen(
-            [config['Program'][prg[0]]],
+            [config['Program']['babsma']],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             cwd=config['Path']['base_dir'],
             universal_newlines=True)
-    bab_output, bab_errors = p.communicate(input=prg_input)
-    if bab_errors is None:
-        print('Success. Continuous opacity file \n{file}\n generated.\n'.format(file=config['Results']['opacity_file']))
-    p = subprocess.Popen(
-            [config['Program']['bsyn_exec']],
+    bab_output, bab_errors = p.communicate(input=babsma_input)
+    prg = ['eqwidth', 'bsyn']
+    with_abu = [0, 1]
+    results = {}
+    for combination in product(prg, with_abu):
+        if combination[1] == 1 and combination[0] is 'bsyn':
+            continue
+        prg_input = configuration(combination[0], combination[1])
+        process = subprocess.Popen(
+            [config['Program'][combination[0]]],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             cwd=config['Path']['base_dir'],
-            universal_newlines=True)
-    # bsyn_output, bsyn_errors = p.communicate(input=bsyn)
+            universal_newlines=True
+                                    )
+        o, e = process.communicate(input=prg_input)
+        results.update({'error': e, 'output': o})
+        try:
+            turbospectrum[combination[0]].update({combination[1]: results})
+        except KeyError:
+            turbospectrum.update({combination[0]: {combination[1]: results}})
 
 if __name__ == "__main__":
     main()
