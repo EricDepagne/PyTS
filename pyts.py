@@ -33,13 +33,14 @@ def configuration(prg, abu=None):
                 }
     else:
         tpl_file = 'Bsyn_or_Eqwidth.tpl'
-        if abu is not None:
-            if 'eqw' in prg:
+        if 'eqw'in prg:
+            if abu is not None:
                 section = 'Abundances'
             section = 'Eqwidth'
         else:
             section = 'SyntheticSpectrum'
 
+        print('section : {section}'.format(section=section))
         extended_parameters = {
             'intensity_or_flux': config['Global']['intensity_or_flux'],
             'abfind': config['Global']['abfind'],
@@ -66,6 +67,7 @@ def configuration(prg, abu=None):
     d = {**common_parameters, **extended_parameters}
 
     stdin = source.substitute(d)
+    print('Input : {stdin}'.format(stdin=stdin))
 
     return stdin
 
@@ -81,12 +83,13 @@ def main():
             cwd=config['Path']['base_dir'],
             universal_newlines=True)
     bab_output, bab_errors = p.communicate(input=babsma_input)
-    prg = ['eqwidth', 'bsyn']
+    prg = ['bsyn','eqwidth']
     with_abu = [0, 1]
     results = {}
     for combination in product(prg, with_abu):
         if combination[1] == 1 and combination[0] is 'bsyn':
             continue
+        print('À exécuter : {prg} avec {abu}'.format(prg=combination[0], abu=combination[1]))
         prg_input = configuration(combination[0], combination[1])
         process = subprocess.Popen(
             [config['Program'][combination[0]]],
