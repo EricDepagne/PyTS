@@ -20,7 +20,7 @@ turbospectrum = {
                 }
 
 
-def configuration(prg, abu=None):
+def configuration(prg, abu=0):
     print('Executing program {prg}'.format(prg=prg))
     # Loading configuration
     if 'babsma' in prg:
@@ -34,9 +34,9 @@ def configuration(prg, abu=None):
     else:
         tpl_file = 'Bsyn_or_Eqwidth.tpl'
         if 'eqw'in prg:
-            if abu is not None:
-                section = 'Abundances'
             section = 'Eqwidth'
+            if abu == 1:
+                section = 'Abundances'
         else:
             section = 'SyntheticSpectrum'
 
@@ -62,6 +62,7 @@ def configuration(prg, abu=None):
             's_process_fraction': config['Models']['s_process_fraction'],
             'opacity_file': config['Results']['opacity_file'],
         }
+    print('abu : {abu}'.format(abu=abu))
     template = open(tpl_file)
     source = Template(template.read())
     d = {**common_parameters, **extended_parameters}
@@ -83,7 +84,7 @@ def main():
             cwd=config['Path']['base_dir'],
             universal_newlines=True)
     bab_output, bab_errors = p.communicate(input=babsma_input)
-    prg = ['bsyn','eqwidth']
+    prg = ['bsyn', 'eqwidth']
     with_abu = [0, 1]
     results = {}
     for combination in product(prg, with_abu):
