@@ -114,13 +114,10 @@ def main():
             cwd=config['Path']['base_dir'],
             universal_newlines=True)
     bab_output, bab_errors = p.communicate(input=babsma_input)
-<<<<<<< HEAD
-=======
     turbospectrum['babsma'] = {
             'input': babsma_input,
             'output': bab_output,
             'error': bab_errors}
->>>>>>> master
     prg = ['bsyn', 'eqwidth']
     with_abu = [0, 1]
     results = {}
