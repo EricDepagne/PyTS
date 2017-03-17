@@ -7,6 +7,8 @@
 import numpy as np
 
 # python imports
+import os
+from sys import exit
 from string import Template
 import configparser
 import subprocess
@@ -20,7 +22,35 @@ turbospectrum = {
                 }
 
 
+def check_directories():
+    if not os.path.realpath(os.getcwd()) == os.path.realpath(config['Path']['base_dir']):
+        print('Running TurboSpectrum from elsewhere')
+        if config['Global'].getboolean('create_dirs_and_links') is False:
+            print('The program will not change the structure of your directories, and the program will not run properly.')
+            print('If you want the proper structure, you need to change the parameter "create_dirs_and_links" in the configuration file {configfile} from "False" to "True"'.format(configfile='pyts.cfg'))
+            print('The program will now exit')
+            exit()
+        else:
+            print('Linking some directories so')
+            sources_to_link = ['DATA', ]
+            for s in sources_to_link:
+                print(config['Path']['base_dir']+s, os.getcwd() + '/')
+                try:
+                    os.symlink(config['Path']['base_dir']+s, os.getcwd()+'/'+s)
+                except FileExistsError:
+                    print('Link already made. Continuing')
+    else:
+        print('same location')
+    # If we don't run turbospectrum in the base directory, some files can't be read.
+    # We'll make sure thos files are there.
+    print('Script directory : {directory}'.format(directory=os.path.dirname(os.path.realpath(__file__))))
+    print('Base directory : {directory}'.format(directory=os.path.realpath(config['Path']['base_dir'])))
+    print('Running directory : {directory}'.format(directory=os.path.realpath(os.getcwd())))
+
+
 def configuration(prg, abu=None):
+    # Checking for the existence of directories to save files.
+
     print('Executing program {prg}'.format(prg=prg))
     # Loading configuration
     if 'babsma' in prg:
@@ -44,7 +74,7 @@ def configuration(prg, abu=None):
         extended_parameters = {
             'intensity_or_flux': config['Global']['intensity_or_flux'],
             'abfind': config['Global']['abfind'],
-            'out_file': config['Results']['out_file']+config[section]['extension'],
+            'out_file':os.path.realpath(os.getcwd())+'/'+config['Results']['out_file']+config[section]['extension'],
             'number_of_files': len(config[section]['files'].split(",")),
             'list_of_lines_files': '\n'.join(config[section]['files'].split(",")),
             'number_of_elements': len(config['Models']['individual_abundances'].split(",")),
@@ -60,7 +90,7 @@ def configuration(prg, abu=None):
             'helium_fraction': config['Models']['helium_fraction'],
             'r_process_fraction': config['Models']['r_process_fraction'],
             's_process_fraction': config['Models']['s_process_fraction'],
-            'opacity_file': config['Results']['opacity_file'],
+            'opacity_file': os.path.realpath(os.getcwd())+'/'+config['Results']['opacity_file'],
         }
     template = open(tpl_file)
     source = Template(template.read())
@@ -83,7 +113,11 @@ def main():
             cwd=config['Path']['base_dir'],
             universal_newlines=True)
     bab_output, bab_errors = p.communicate(input=babsma_input)
-    prg = ['bsyn','eqwidth']
+    turbospectrum['babsma'] = {
+            'input': babsma_input,
+            'output': bab_output,
+            'error': bab_errors}
+    prg = ['bsyn', 'eqwidth']
     with_abu = [0, 1]
     results = {}
     for combination in product(prg, with_abu):
@@ -106,4 +140,5 @@ def main():
             turbospectrum.update({combination[0]: {combination[1]: results}})
 
 if __name__ == "__main__":
+    check_directories()
     main()
