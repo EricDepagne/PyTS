@@ -73,7 +73,7 @@ def configuration(prg, abu=0):
         print('section : {section}'.format(section=section))
         extended_parameters = {
             'intensity_or_flux': config['Global']['intensity_or_flux'],
-            'abfind': config['Global']['abfind'],
+            'abfind': config[section]['abfind'],
             'out_file':os.path.realpath(os.getcwd())+'/'+config['Results']['out_file']+config[section]['extension'],
             'number_of_files': len(config[section]['files'].split(",")),
             'list_of_lines_files': '\n'.join(config[section]['files'].split(",")),
