@@ -22,27 +22,33 @@ turbospectrum = {
                 }
 
 
-def check_directories():
+def check_config():
     if not os.path.realpath(os.getcwd()) == os.path.realpath(config['Path']['base_dir']):
         print('Running TurboSpectrum from elsewhere')
         if config['Global'].getboolean('create_dirs_and_links') is False:
-            print('The program will not change the structure of your directories, and the program will not run properly.')
+            print('The program will not change the structure of your directories, and the turbospectrum programs will not run properly.')
             print('If you want the proper structure, you need to change the parameter "create_dirs_and_links" in the configuration file {configfile} from "False" to "True"'.format(configfile='pyts.cfg'))
             print('The program will now exit')
             exit()
         else:
-            print('Linking some directories so')
+            print('Linking some directories and files.')
             sources_to_link = ['DATA', ]
             for s in sources_to_link:
                 print(config['Path']['base_dir']+s, os.getcwd() + '/')
+    # If we don't run turbospectrum in the base directory, some files can't be read.
+    # We'll make sure thos files are there.
                 try:
                     os.symlink(config['Path']['base_dir']+s, os.getcwd()+'/'+s)
                 except FileExistsError:
                     print('Link already made. Continuing')
     else:
         print('same location')
-    # If we don't run turbospectrum in the base directory, some files can't be read.
-    # We'll make sure thos files are there.
+
+    template_files = ['Babsma.tpl', 'Bsyn_or_Eqwidth.tpl']
+    for tplf in template_files:
+        if not os.path.isfile(tplf):
+            os.symlink(os.path.dirname(os.path.realpath(__file__))+'/'+tplf, os.path.realpath(os.getcwd())+'/'+tplf)
+
     print('Script directory : {directory}'.format(directory=os.path.dirname(os.path.realpath(__file__))))
     print('Base directory : {directory}'.format(directory=os.path.realpath(config['Path']['base_dir'])))
     print('Running directory : {directory}'.format(directory=os.path.realpath(os.getcwd())))
@@ -51,7 +57,7 @@ def check_directories():
 def configuration(prg, abu=0):
     # Checking for the existence of directories to save files.
 
-    print('Executing program {prg}'.format(prg=prg))
+    # print('Executing program {prg}'.format(prg=prg))
     # Loading configuration
     if 'babsma' in prg:
         tpl_file = 'Babsma.tpl'
@@ -74,7 +80,7 @@ def configuration(prg, abu=0):
         extended_parameters = {
             'intensity_or_flux': config['Global']['intensity_or_flux'],
             'abfind': config[section]['abfind'],
-            'out_file':os.path.realpath(os.getcwd())+'/'+config['Results']['out_file']+config[section]['extension'],
+            'out_file': os.path.realpath(os.getcwd())+'/'+config['Results']['out_file']+config[section]['extension'],
             'number_of_files': len(config[section]['files'].split(",")),
             'list_of_lines_files': '\n'.join(config[section]['files'].split(",")),
             'number_of_elements': len(config['Models']['individual_abundances'].split(",")),
@@ -106,18 +112,20 @@ def configuration(prg, abu=0):
 def main():
     print('Starting Turbospectrum version {version}\n'.format(version=turbospectrum['version']))
     # Babsma is run everytime.
-    babsma_input = configuration('babsma')
-    p = subprocess.Popen(
-            [config['Program']['babsma']],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            cwd=config['Path']['base_dir'],
-            universal_newlines=True)
-    bab_output, bab_errors = p.communicate(input=babsma_input)
-    turbospectrum['babsma'] = {
-            'input': babsma_input,
-            'output': bab_output,
-            'error': bab_errors}
+    if config['Global']['use_babsma']:
+        print('Executing Babsma')
+        babsma_input = configuration('babsma')
+        p = subprocess.Popen(
+                [config['Program']['babsma']],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                cwd=config['Path']['base_dir'],
+                universal_newlines=True)
+        bab_output, bab_errors = p.communicate(input=babsma_input)
+        turbospectrum['babsma'] = {
+                'input': babsma_input,
+                'output': bab_output,
+                'error': bab_errors}
     prg = ['bsyn', 'eqwidth']
     with_abu = [0, 1]
     results = {}
@@ -141,5 +149,5 @@ def main():
             turbospectrum.update({combination[0]: {combination[1]: results}})
 
 if __name__ == "__main__":
-    check_directories()
+    check_config()
     main()
